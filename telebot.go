@@ -4,6 +4,7 @@ import (
     "net/http"
     "io/ioutil"
     "errors"
+    "encoding/json"
     "fmt"
 )
 
@@ -18,11 +19,42 @@ func checkErr(err error){
 type Bot struct{
     Api string
     Key string
+    Maxid float64
 }
 
 
+func (b *Bot)Getupdate()(string,error){
+    url := fmt.Sprintf("%v/bot%v/getUpdates",b.Api,b.Key)
+    s,err := send(url)
+    if err != nil{
+        return "",err
+    }
+    res := make(map[string]interface{})
+    err = json.Unmarshal([]byte(s), &res)
+    if err != nil{
+        return "",err
+    }
+    if res["ok"] != true{
+        return "",errors.New("resp err; " + s)
+    }
+
+    for _,v := range(res["result"].([]interface{})){
+        dic_mess := v.(map[string]interface{})
+        up_id := dic_mess["update_id"].(float64)
+        if up_id > b.Maxid{
+            fmt.Println(dic_mess)
+            b.Maxid = up_id
+        }
+    }
+    return s,nil
+}
+
 func (b Bot)Getme()(string, error){
     url := fmt.Sprintf("%v/bot%v/getMe",b.Api,b.Key)
+    return send(url)
+}
+
+func send(url string)(string, error){
     resp, err := http.Get(url)
     if err != nil{
         return "", errors.New("get request fail," + err.Error())
