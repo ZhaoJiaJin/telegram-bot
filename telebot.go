@@ -45,13 +45,13 @@ func (b *Bot)Start_receive(mess_chan chan Mess){
 func (b *Bot)Receive(mess_chan chan Mess){
     for ;b.receive; {
         b.Getupdate(mess_chan)
-        time.Sleep(500 * time.Millisecond)
+        time.Sleep(10 * time.Millisecond)
     }
 
 }
 
 func (b *Bot)Getupdate(mess_chan chan Mess){
-    url := fmt.Sprintf("%v/bot%v/getUpdates",b.Api,b.Key)
+    url := fmt.Sprintf("%v/bot%v/getUpdates?offset=%v&timeout=30",b.Api,b.Key,b.Maxid+1)
     s,err := send(url)
     if err != nil{
         fmt.Println(err)
