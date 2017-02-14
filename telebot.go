@@ -21,7 +21,6 @@ type Bot struct{
     Api string
     Key string
     Maxid float64
-    Mess_chan chan Mess
     receive bool
 }
 
@@ -38,23 +37,20 @@ func (b *Bot)Stop_receive(){
     b.receive = false
 }
 
-func (b *Bot)GetChan(){
+func (b *Bot)Start_receive(mess_chan chan Mess){
     b.receive = true
-    go b.Receive()
+    go b.Receive(mess_chan)
 }
 
-func (b *Bot)Receive(){
+func (b *Bot)Receive(mess_chan chan Mess){
     for ;b.receive; {
-        b.Getupdate()
-        time.Sleep(2000 * time.Millisecond)
+        b.Getupdate(mess_chan)
+        time.Sleep(500 * time.Millisecond)
     }
 
 }
 
-func (b *Bot)Getupdate(){
-    if b.Mess_chan == nil{
-        b.Mess_chan = make(chan Mess,1000)
-    }
+func (b *Bot)Getupdate(mess_chan chan Mess){
     url := fmt.Sprintf("%v/bot%v/getUpdates",b.Api,b.Key)
     s,err := send(url)
     if err != nil{
@@ -76,8 +72,8 @@ func (b *Bot)Getupdate(){
             mess_con := dic_mess["message"].(map[string]interface{})
             one_mess := Mess{Update_id:up_id,Mess_id:mess_con["message_id"].(float64),Chat:mess_con["chat"],Date:mess_con["date"].(float64),Text:mess_con["text"].(string),Entity:mess_con["entities"]}
             //fmt.Println(one_mess)
-            fmt.Println("put message",one_mess)
-            b.Mess_chan <- one_mess
+            fmt.Println("put message",one_mess.Mess_id)
+            mess_chan <- one_mess
             b.Maxid = up_id
         }
     }
