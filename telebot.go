@@ -51,7 +51,7 @@ func (b *Bot)Receive(mess_chan chan Mess){
 }
 
 func (b *Bot)Getupdate(mess_chan chan Mess){
-    url := fmt.Sprintf("%v/bot%v/getUpdates?offset=%v&timeout=30",b.Api,b.Key,b.Maxid+1)
+    url := fmt.Sprintf("%v/bot%v/getUpdates?offset=%v&timeout=60",b.Api,b.Key,b.Maxid+1)
     s,err := send(url)
     if err != nil{
         fmt.Println(err)
@@ -72,7 +72,6 @@ func (b *Bot)Getupdate(mess_chan chan Mess){
             mess_con := dic_mess["message"].(map[string]interface{})
             one_mess := Mess{Update_id:up_id,Mess_id:mess_con["message_id"].(float64),Chat:mess_con["chat"],Date:mess_con["date"].(float64),Text:mess_con["text"].(string),Entity:mess_con["entities"]}
             //fmt.Println(one_mess)
-            fmt.Println("put message",one_mess.Mess_id)
             mess_chan <- one_mess
             b.Maxid = up_id
         }
